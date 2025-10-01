@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン / Login - Pastebin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <div class="header-content">
+        <a href="/" class="logo">
+            ペーストビン
+            <span class="logo-subtitle">Pastebin</span>
+        </a>
+        <nav>
+            <a href="/">ホーム / Home</a>
+            <a href="/register">登録 / Register</a>
+        </nav>
+    </div>
+</header>
+
+<div class="auth-container">
+    <h2>ログイン<br><span style="font-size: 12px;">Login</span></h2>
+
+    <div th:if="${param.registered}" class="success-message">
+        登録成功！ログインしてください<br>Registration successful! Please login
+    </div>
+
+    <div th:if="${param.error}" class="error-message">
+        ユーザー名またはパスワードが無効です<br>Invalid username or password
+    </div>
+
+    <div th:if="${param.logout}" class="success-message">
+        ログアウトしました<br>You have been logged out
+    </div>
+
+    <form method="post" th:action="@{/login}">
+        <div class="form-group">
+            <label>
+                ユーザー名
+                <span class="label-en">Username</span>
+            </label>
+            <input type="text" name="username" required>
+        </div>
+
+        <div class="form-group">
+            <label>
+                パスワード
+                <span class="label-en">Password</span>
+            </label>
+            <input type="password" name="password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">ログイン / Login</button>
+    </form>
+
+    <div class="auth-links">
+        <p>アカウントがありませんか？ / Don't have an account?
+            <a href="/register">登録 / Register</a>
+        </p>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2025 ペーストビン / Pastebin</p>
+</footer>
+</body>
+</html>

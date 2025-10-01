@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ペーストビン / Pastebin</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+  <div class="header-content">
+    <a href="/" class="logo">
+      ペーストビン
+      <span class="logo-subtitle">Pastebin</span>
+    </a>
+    <nav>
+      <a href="/new">新規作成 / New</a>
+      <a href="/login">ログイン / Login</a>
+      <a href="/register">登録 / Register</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <h1>ペーストビン<br><span style="font-size: 16px;">Pastebin</span></h1>
+    <p>コードとテキストを共有 / Share code and text</p>
+    <a href="/new" class="btn btn-primary">新しいペースト / Create New Paste</a>
+  </div>
+
+  <div class="recent-pastes" th:if="${recentPastes != null && !recentPastes.isEmpty()}">
+    <h2>最近のパブリック / Recent Public Pastes</h2>
+    <div th:each="paste : ${recentPastes}" class="paste-card">
+      <h3><a th:href="@{/p/{key}(key=${paste.urlKey})}" th:text="${paste.title}">Paste Title</a></h3>
+      <p>言語 / Language: <span th:text="${paste.language}">text</span></p>
+      <p>作成者 / Author: <span th:text="${paste.user.username}">username</span></p>
+      <p>作成日時 / Created: <span th:text="${#temporals.format(paste.createdAt, 'yyyy-MM-dd HH:mm')}">date</span></p>
+    </div>
+  </div>
+
+  <div class="no-pastes" th:if="${recentPastes == null || recentPastes.isEmpty()}">
+    <p>まだパブリックペーストがありません<br>No public pastes yet</p>
+  </div>
+</div>
+
+<footer>
+  <p>&copy; 2025 ペーストビン / Pastebin</p>
+</footer>
+</body>
+</html>

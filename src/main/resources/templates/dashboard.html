@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ダッシュボード / Dashboard - Pastebin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <div class="header-content">
+        <a href="/" class="logo">
+            ペーストビン
+            <span class="logo-subtitle">Pastebin</span>
+        </a>
+        <nav>
+            <a href="/">ホーム / Home</a>
+            <a href="/new">新規作成 / New</a>
+            <a sec:authorize="hasAuthority('ADMIN')" href="/admin">管理者 / Admin</a>
+            <a href="/logout">ログアウト / Logout</a>
+        </nav>
+    </div>
+</header>
+
+<div class="container">
+    <div class="dashboard-header">
+        <h2>ダッシュボード<br><span style="font-size: 14px;">Dashboard - <span th:text="${username}">User</span></span></h2>
+        <a href="/new" class="btn btn-primary">新しいペースト / New Paste</a>
+    </div>
+
+    <div th:if="${pastes != null && !pastes.isEmpty()}">
+        <div th:each="paste : ${pastes}" class="paste-card">
+            <h3><a th:href="@{/p/{key}(key=${paste.urlKey})}" th:text="${paste.title}">Paste Title</a></h3>
+            <p>言語 / Language: <span th:text="${paste.language}">text</span></p>
+            <p>作成日時 / Created: <span th:text="${#temporals.format(paste.createdAt, 'yyyy-MM-dd HH:mm')}">date</span></p>
+            <p th:if="${paste.expiresAt != null}">
+                有効期限 / Expires: <span th:text="${#temporals.format(paste.expiresAt, 'yyyy-MM-dd HH:mm')}">date</span>
+            </p>
+            <p>可視性 / Visibility:
+                <span th:text="${paste.isPrivate ? 'プライベート / Private' : 'パブリック / Public'}">Public</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="no-pastes" th:if="${pastes == null || pastes.isEmpty()}">
+        <p>まだペーストがありません<br>No pastes yet</p>
+        <a href="/new" class="btn">最初のペーストを作成 / Create your first paste</a>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2025 ペーストビン / Pastebin</p>
+</footer>
+</body>
+</html>

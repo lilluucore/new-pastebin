@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新規作成 / New Paste - Pastebin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <div class="header-content">
+        <a href="/" class="logo">
+            ペーストビン
+            <span class="logo-subtitle">Pastebin</span>
+        </a>
+        <nav>
+            <a href="/">ホーム / Home</a>
+            <a sec:authorize="isAuthenticated()" href="/dashboard">ダッシュボード / Dashboard</a>
+            <a sec:authorize="hasAuthority('ADMIN')" href="/admin">管理者 / Admin</a>
+            <a sec:authorize="isAuthenticated()" href="/logout">ログアウト / Logout</a>
+            <a sec:authorize="!isAuthenticated()" href="/login">ログイン / Login</a>
+        </nav>
+    </div>
+</header>
+
+<div class="container">
+    <h2>新しいペーストを作成<br><span style="font-size: 14px;">Create New Paste</span></h2>
+
+    <form method="post" th:action="@{/paste}">
+        <div class="form-group">
+            <label>
+                タイトル
+                <span class="label-en">Title</span>
+            </label>
+            <input type="text" name="title" required>
+        </div>
+
+        <div class="form-group">
+            <label>
+                コンテンツ
+                <span class="label-en">Content</span>
+            </label>
+            <textarea name="content" required></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>
+                言語
+                <span class="label-en">Language</span>
+            </label>
+            <select name="language">
+                <option value="text">テキスト / Text</option>
+                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
+                <option value="java">Java</option>
+                <option value="cpp">C++</option>
+                <option value="csharp">C#</option>
+                <option value="php">PHP</option>
+                <option value="ruby">Ruby</option>
+                <option value="go">Go</option>
+                <option value="rust">Rust</option>
+                <option value="html">HTML</option>
+                <option value="css">CSS</option>
+                <option value="sql">SQL</option>
+                <option value="json">JSON</option>
+                <option value="xml">XML</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>
+                有効期限（日数）
+                <span class="label-en">Expiration (days)</span>
+            </label>
+            <select name="expirationDays">
+                <option value="">無期限 / Never</option>
+                <option value="1">1日 / 1 Day</option>
+                <option value="7">7日 / 7 Days</option>
+                <option value="30">30日 / 30 Days</option>
+                <option value="90">90日 / 90 Days</option>
+            </select>
+        </div>
+
+        <div class="form-group checkbox-group">
+            <input type="checkbox" name="isPrivate" id="isPrivate">
+            <label for="isPrivate">
+                プライベート（あなただけ閲覧可能）
+                <span class="label-en">Private (only you can view)</span>
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary">作成 / Create Paste</button>
+    </form>
+</div>
+
+<footer>
+    <p>&copy; 2025 ペーストビン / Pastebin</p>
+</footer>
+</body>
+</html>

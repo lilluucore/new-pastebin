@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理者パネル / Admin Panel - Pastebin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+    <div class="header-content">
+        <a href="/" class="logo">
+            ペーストビン
+            <span class="logo-subtitle">Pastebin</span>
+        </a>
+        <nav>
+            <a href="/">ホーム / Home</a>
+            <a href="/dashboard">ダッシュボード / Dashboard</a>
+            <a href="/admin">管理者パネル / Admin</a>
+            <a href="/logout">ログアウト / Logout</a>
+        </nav>
+    </div>
+</header>
+
+<div class="container">
+    <div class="dashboard-header">
+        <h2>管理者パネル<br><span style="font-size: 14px;">Admin Panel</span></h2>
+    </div>
+
+    <div class="paste-info" style="margin-bottom: 30px;">
+        <h3 style="margin-bottom: 15px; color: #fff;">統計 / Statistics</h3>
+        <p><strong>総ユーザー数 / Total Users:</strong> <span th:text="${totalUsers}">0</span></p>
+        <p><strong>総ペースト数 / Total Pastes:</strong> <span th:text="${totalPastes}">0</span></p>
+        <p><strong>総コメント数 / Total Comments:</strong> <span th:text="${totalComments}">0</span></p>
+        <p><strong>総閲覧数 / Total Views:</strong> <span th:text="${totalViews}">0</span></p>
+    </div>
+
+    <div style="margin-bottom: 40px;">
+        <h3 style="color: #fff; margin-bottom: 20px;">ユーザー管理 / User Management</h3>
+        <div th:each="user : ${users}" class="paste-card">
+            <h4 style="color: #fff; margin-bottom: 10px;">
+                <span th:text="${user.username}">username</span>
+                <span th:if="${user.role == 'ADMIN'}" style="color: #8e8; font-size: 12px;"> [管理者 / ADMIN]</span>
+                <span th:if="${user.isBanned}" style="color: #e88; font-size: 12px;"> [禁止 / BANNED]</span>
+            </h4>
+            <p>メール / Email: <span th:text="${user.email}">email</span></p>
+            <p>登録日 / Registered: <span th:text="${#temporals.format(user.createdAt, 'yyyy-MM-dd HH:mm')}">date</span></p>
+            <p>ペースト数 / Pastes: <span th:text="${user.pastes.size()}">0</span></p>
+            <div style="margin-top: 10px;" th:if="${user.id != currentUser.id}">
+                <button th:if="${!user.isBanned}"
+                        th:onclick="'banUser(' + ${user.id} + ')'"
+                        class="btn"
+                        style="background-color: #2a0d0d; border-color: #442222;">
+                    禁止 / Ban User
+                </button>
+                <button th:if="${user.isBanned}"
+                        th:onclick="'unbanUser(' + ${user.id} + ')'"
+                        class="btn"
+                        style="background-color: #0d2a0d; border-color: #224422;">
+                    解除 / Unban User
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <h3 style="color: #fff; margin-bottom: 20px;">ペースト管理 / Paste Management</h3>
+        <div th:each="paste : ${pastes}" class="paste-card">
+            <h4 style="color: #fff; margin-bottom: 10px;">
+                <a th:href="@{/p/{key}(key=${paste.urlKey})}" th:text="${paste.title}">Paste Title</a>
+            </h4>
+            <p>作成者 / Author: <span th:text="${paste.user.username}">username</span></p>
+            <p>言語 / Language: <span th:text="${paste.language}">text</span></p>
+            <p>作成日時 / Created: <span th:text="${#temporals.format(paste.createdAt, 'yyyy-MM-dd HH:mm')}">date</span></p>
+            <p>閲覧数 / Views: <span th:text="${paste.viewCount}">0</span></p>
+            <p>コメント数 / Comments: <span th:text="${paste.comments.size()}">0</span></p>
+            <p>可視性 / Visibility:
+                <span th:text="${paste.isPrivate ? 'プライベート / Private' : 'パブリック / Public'}">Public</span>
+            </p>
+            <div style="margin-top: 10px;">
+                <button th:onclick="'deletePaste(\'' + ${paste.urlKey} + '\')'"
+                        class="btn"
+                        style="background-color: #2a0d0d; border-color: #442222;">
+                    削除 / Delete Paste
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2025 ペーストビン / Pastebin</p>
+</footer>
+
+<script>
+    function banUser(userId) {
+        if (!confirm('このユーザーを禁止しますか？ / Ban this user?')) {
+            return;
+        }
+
+        fetch('/admin/user/' + userId + '/ban', {
+            method: 'POST'
+        })
+            .then(response => response.text())
+            .then(data => {
+                if (data === 'success') {
+                    alert('ユーザーが禁止されました / User banned successfully');
+                    location.reload();
+                } else {
+                    alert('エラーが発生しました / Error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('エラーが発生しました / Error occurred');
+            });
+    }
+
+    function unbanUser(userId) {
+        if (!confirm('このユーザーの禁止を解除しますか？ / Unban this user?')) {
+            return;
+        }
+
+        fetch('/admin/user/' + userId + '/unban', {
+            method: 'POST'
+        })
+            .then(response => response.text())
+            .then(data => {
+                if (data === 'success') {
+                    alert('禁止が解除されました / User unbanned successfully');
+                    location.reload();
+                } else {
+                    alert('エラーが発生しました / Error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('エラーが発生しました / Error occurred');
+            });
+    }
+
+    function deletePaste(urlKey) {
+        if (!confirm('このペーストを削除しますか？ / Delete this paste?')) {
+            return;
+        }
+
+        fetch('/admin/paste/' + urlKey + '/delete', {
+            method: 'POST'
+        })
+            .then(response => response.text())
+            .then(data => {
+                if (data === 'success') {
+                    alert('ペーストが削除されました / Paste deleted successfully');
+                    location.reload();
+                } else {
+                    alert('エラーが発生しました / Error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('エラーが発生しました / Error occurred');
+            });
+    }
+</script>
+</body>
+</html>

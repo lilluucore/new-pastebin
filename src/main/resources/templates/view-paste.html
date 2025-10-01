@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${paste.title} + ' - Pastebin'">Paste - Pastebin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/base16/grayscale-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+</head>
+<body>
+<header>
+    <div class="header-content">
+        <a href="/" class="logo">
+            ペーストビン
+            <span class="logo-subtitle">Pastebin</span>
+        </a>
+        <nav>
+            <a href="/">ホーム / Home</a>
+            <a href="/new">新規作成 / New</a>
+            <a sec:authorize="isAuthenticated()" href="/dashboard">ダッシュボード / Dashboard</a>
+            <a sec:authorize="hasAuthority('ADMIN')" href="/admin">管理者 / Admin</a>
+            <a sec:authorize="isAuthenticated()" href="/logout">ログアウト / Logout</a>
+            <a sec:authorize="!isAuthenticated()" href="/login">ログイン / Login</a>
+        </nav>
+    </div>
+</header>
+
+<div class="container">
+    <div class="paste-info">
+        <h2 th:text="${paste.title}">Paste Title</h2>
+        <p><strong>作成者 / Author:</strong> <span th:text="${paste.user.username}">username</span></p>
+        <p><strong>言語 / Language:</strong> <span th:text="${paste.language}">text</span></p>
+        <p><strong>作成日時 / Created:</strong> <span th:text="${#temporals.format(paste.createdAt, 'yyyy-MM-dd HH:mm:ss')}">date</span></p>
+        <p><strong>閲覧数 / Views:</strong> <span th:text="${paste.viewCount}">0</span></p>
+        <p th:if="${paste.expiresAt != null}">
+            <strong>有効期限 / Expires:</strong>
+            <span th:text="${#temporals.format(paste.expiresAt, 'yyyy-MM-dd HH:mm:ss')}">date</span>
+        </p>
+        <p><strong>可視性 / Visibility:</strong>
+            <span th:text="${paste.isPrivate ? 'プライベート / Private' : 'パブリック / Public'}">Public</span>
+        </p>
+    </div>
+
+    <div class="paste-content">
+        <pre><code th:class="${'language-' + paste.language}" th:text="${paste.content}">Code content here</code></pre>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <button onclick="copyToClipboard()" class="btn">コピー / Copy</button>
+        <a th:href="@{/p/{key}(key=${paste.urlKey})}" class="btn">リンク / Raw Link</a>
+    </div>
+
+    <div style="margin-top: 40px;" id="comments-section">
+        <h3 style="color: #fff; margin-bottom: 20px;">
+            コメント / Comments (<span th:text="${paste.comments.size()}">0</span>)
+        </h3>
+
+        <div sec:authorize="isAuthenticated()" class="paste-info" style="margin-bottom: 30px;">
+            <h4 style="color: #ccc; margin-bottom: 15px;">新しいコメント / New Comment</h4>
+            <form id="comment-form" onsubmit="submitComment(event)">
+                <div class="form-group">
+                    <textarea id="comment-content" name="content" placeholder="コメントを入力... / Enter comment..." style="min-height: 100px;"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">投稿 / Post Comment</button>
+            </form>
+        </div>
+
+        <div sec:authorize="!isAuthenticated()" class="paste-info" style="margin-bottom: 30px;">
+            <p style="text-align: center; color: #888;">
+                コメントするにはログインしてください<br>
+                Please <a href="/login" style="color: #bbb;">login</a> to comment
+            </p>
+        </div>
+
+        <div id="comments-list">
+            <div th:each="comment : ${paste.comments}" th:if="${comment.parent == null}" class="paste-card" style="margin-bottom: 15px;">
+                <div style="border-left: 2px solid #444; padding-left: 15px;">
+                    <p style="color: #bbb; margin-bottom: 5px;">
+                        <strong th:text="${comment.user.username}">username</strong>
+                        <span style="color: #666; font-size: 11px;" th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd HH:mm')}">date</span>
+                    </p>
+                    <p th:text="${comment.content}" style="color: #e0e0e0; white-space: pre-wrap;">Comment content</p>
+
+                    <div th:if="${comment.replies != null && !comment.replies.isEmpty()}" style="margin-top: 15px; margin-left: 20px;">
+                        <div th:each="reply : ${comment.replies}" class="paste-card" style="background-color: #0a0a0a; margin-bottom: 10px;">
+                            <div style="border-left: 2px solid #555; padding-left: 15px;">
+                                <p style="color: #bbb; margin-bottom: 5px;">
+                                    <strong th:text="${reply.user.username}">username</strong>
+                                    <span style="color: #666; font-size: 11px;" th:text="${#temporals.format(reply.createdAt, 'yyyy-MM-dd HH:mm')}">date</span>
+                                </p>
+                                <p th:text="${reply.content}" style="color: #e0e0e0; white-space: pre-wrap;">Reply content</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2025 ペーストビン / Pastebin</p>
+</footer>
+
+<script th:inline="javascript">
+    const pasteUrlKey = /*[[${paste.urlKey}]]*/ '';
+
+    document.addEventListener('DOMContentLoaded', (event) => {
+        hljs.highlightAll();
+    });
+
+    function copyToClipboard() {
+        const code = /*[[${paste.content}]]*/ '';
+        navigator.clipboard.writeText(code).then(() => {
+            alert('コピーしました！ / Copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy:', err);
+        });
+    }
+
+    function submitComment(event) {
+        event.preventDefault();
+
+        const content = document.getElementById('comment-content').value.trim();
+
+        if (!content) {
+            alert('コメントを入力してください / Please enter a comment');
+            return;
+        }
+
+        fetch('/api/comments', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                content: content,
+                pasteUrlKey: pasteUrlKey
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('コメントが投稿されました / Comment posted successfully');
+                    location.reload();
+                } else {
+                    alert('エラーが発生しました / Error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('エラーが発生しました / Error occurred');
+            });
+    }
+</script>
+</body>
+</html>

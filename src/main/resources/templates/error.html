@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>エラー / Error - Pastebin</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<header>
+  <div class="header-content">
+    <a href="/" class="logo">
+      ペーストビン
+      <span class="logo-subtitle">Pastebin</span>
+    </a>
+    <nav>
+      <a href="/">ホーム / Home</a>
+      <a href="/new">新規作成 / New</a>
+    </nav>
+  </div>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <h1>エラー<br><span style="font-size: 16px;">Error</span></h1>
+    <p>ページが見つからないか、アクセス権限がありません<br>Page not found or access denied</p>
+    <a href="/" class="btn btn-primary">ホームに戻る / Go Home</a>
+  </div>
+</div>
+
+<footer>
+  <p>&copy; 2025 ペーストビン / Pastebin</p>
+</footer>
+</body>
+</html>
